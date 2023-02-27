@@ -1,4 +1,6 @@
 import numpy as np
+from itertools import zip_longest
+
 board=np.array([
     [0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0],
@@ -11,35 +13,53 @@ board=np.array([
     [0,0,0,0,0,0,0,0,0,0]
     ])
 
+def list2board(at:list):
+    return board[at[0]][at[1]]
+
 def set(which:int,where:list):
-    board[where[0]][where[1]]=which
+    if not where in [i[0] for i in get_settable(which)]:
+        return False
+    place=[i for i in get_settable(which) if i[0]==where][0][1]
+    print(where[0],place[0],where[1],place[1])
+    abs(place[0]-where[0])
+    step_x=1 if place[0]-where[0]>0 else -1 if place[0]-where[0]<0 else 0
+    step_y=1 if place[1]-where[1]>0 else -1 if place[1]-where[1]<0 else 0
+    repx=range(where[0],place[0]+1,step_x) if step_x else [where[0]]*(abs(place[1]-where[1])+1)
+    repy=range(where[1],place[1]+1,step_y) if step_y else [where[1]]*(abs(place[0]-where[0])+1)
+    print(repx,repy)
+    for i,j in zip(repx,repy):
+        board[i][j]=which
+    print(board)
+
+def get_sequence(which:int,at:list):
+    opponent=3-which
+    sequence=[]
+    place=[]
+    for i in at:
+        if list2board(i)==opponent:
+            sequence.append(list2board(i))
+            place.append(i)
+        else:
+            sequence.append(list2board(i)) if list2board(i)!=0 else ...
+            place.append(i)
+            break
+    return [sequence,place]
 
 def get_settable(which:int):
-    ...
+    opponent=3-which
+    settable=[]
     for i in range(1,9):
         for j in range(1,9):
-            around=get_around([i,j])
-            cross=get_cross([i,j])
+            cross=[i for i in get_cross([i,j]) if i]
+            for k in cross:
+                around=get_sequence(which,k)
+                if around[0] and around[0][0]==opponent and around[0][-1]==which:
+                    settable.append([[i,j],around[1][-1]])
+    return settable
+                
 
 def get_around(where:list):
-    around=[]
-    around_place=[
-        [where[0]-1,where[1]-1],
-        [where[0]-1,where[1]],
-        [where[0]-1,where[1]+1],
-        [where[0],where[1]-1],
-        [where[0],where[1]+1],
-        [where[0]+1,where[1]-1],
-        [where[0]+1,where[1]],
-        [where[0]+1,where[1]+1]
-        ]
-    print(around_place)
-    for i in around_place:
-        if any([i[0]<1,i[0]>8,i[1]<1,i[1]>8]):
-            pass
-        else:
-            around.append(board[i[0]][i[1]])
-    return around
+    return [i[0] for i in get_cross(where) if i]
 
 def get_cross(where:list):
     cross_around_up_left=[]
@@ -47,17 +67,21 @@ def get_cross(where:list):
     vertical=[]
     horizontal=[]
     if where[0]>where[1]:
-        for i,j in zip(range(1+(where[0]-where[1]),10-(where[0]-where[1])),range(1,9)):
+        for i,j in zip(range(1+(where[0]-where[1]),9),range(1,9)):
             cross_around_up_left.append([i,j])
     elif where[0]<where[1]:
-        for i,j in zip(range(1,9),range(1+(where[1]-where[0]),10-(where[1]-where[0]))):
+        for i,j in zip(range(1,9),range(1+(where[1]-where[0]),9)):
             cross_around_up_left.append([i,j])
     else:
         for i in range(1,9):
             cross_around_up_left.append([i,i])
-    
-    for i,j in zip(range(1,sum(where)),range(sum(where)-1,0,-1)):
-        cross_around_up_right.append([i,j])
+
+    if sum(where)<=8:
+        for i,j in zip(range(1,sum(where)),range(sum(where)-1,0,-1)):
+            cross_around_up_right.append([i,j])
+    elif sum(where)>8:
+        for i,j in zip(range(sum(where)-8,9),range(8,sum(where)-9,-1)):
+            cross_around_up_right.append([i,j])
 
     for i in range(1,9):
         vertical.append([i,where[1]])
@@ -69,15 +93,15 @@ def get_cross(where:list):
     up_right_index=cross_around_up_right.index(where)
 
     return [
-            vertical[:v_index],
-            reversed(cross_around_up_right[:up_right_index]),
+            list(reversed(vertical[:v_index])),
+            list(reversed(cross_around_up_right[:up_right_index])),
             horizontal[h_index+1:],
             cross_around_up_left[up_left_index+1:],
             vertical[v_index+1:],
             cross_around_up_right[up_right_index+1:],
-            reversed(horizontal[:h_index]),
-            reversed(cross_around_up_left[:up_left_index]),
+            list(reversed(horizontal[:h_index])),
+            list(reversed(cross_around_up_left[:up_left_index])),
             ]
 
-print(get_cross([4,4]))
+set(2,[3,4])
     
