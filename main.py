@@ -102,5 +102,8 @@ class Othello:
                 list(reversed(horizontal[:h_index])),
                 list(reversed(cross_around_up_left[:up_left_index])),
                 ]
-
+    def list2str(self):
+        return "\n".join(["".join([str(i) for i in j]) for j in self.board[1:]][1:])
     
+othello=Othello()
+print(othello.list2str())
