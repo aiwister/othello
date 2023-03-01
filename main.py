@@ -52,11 +52,12 @@ class Othello:
         settable=[]
         for i in range(1,9):
             for j in range(1,9):
-                cross=[i for i in self.get_cross([i,j]) if i]
-                for k in cross:
-                    around=self.get_sequence(which,k)
-                    if around[0] and around[0][0]==opponent and around[0][-1]==which:
-                        settable.append([[i,j],around[1][-1]])
+                if self.list2board([i,j])==0:
+                    cross=[i for i in self.get_cross([i,j]) if i]
+                    for k in cross:
+                        around=self.get_sequence(which,k)
+                        if around[0] and around[0][0]==opponent and around[0][-1]==which:
+                            settable.append([[i,j],around[1][-1]])
         return settable
                     
 
