@@ -1,5 +1,4 @@
 import numpy as np
-from itertools import zip_longest
 
 class Othello:
     def __init__(self):
@@ -8,9 +7,9 @@ class Othello:
         [0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,1,2,0,0,0,0],
-        [0,0,0,0,2,1,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,1,1,0,0,0,0],
+        [0,0,0,0,1,1,2,0,0,0],
+        [0,0,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0]
@@ -21,16 +20,15 @@ class Othello:
 
     def set(self,which:int,where:list):
         if not where in [i[0] for i in self.get_settable(which)]:
-            return False
-        place=[i for i in self.get_settable(which) if i[0]==where][0][1]
-        print(where[0],place[0],where[1],place[1])
-        abs(place[0]-where[0])
-        step_x=1 if place[0]-where[0]>0 else -1 if place[0]-where[0]<0 else 0
-        step_y=1 if place[1]-where[1]>0 else -1 if place[1]-where[1]<0 else 0
-        repx=range(where[0],place[0]+1,step_x) if step_x else [where[0]]*(abs(place[1]-where[1])+1)
-        repy=range(where[1],place[1]+1,step_y) if step_y else [where[1]]*(abs(place[0]-where[0])+1)
-        for i,j in zip(repx,repy):
-            self.board[i][j]=which
+            return
+        places=[i[1] for i in self.get_settable(which) if i[0]==where]
+        for place in places:
+            step_x=1 if place[0]-where[0]>0 else -1 if place[0]-where[0]<0 else 0
+            step_y=1 if place[1]-where[1]>0 else -1 if place[1]-where[1]<0 else 0
+            repx=range(where[0],place[0]+step_x,step_x) if step_x else [where[0]]*(abs(place[1]-where[1])+1)
+            repy=range(where[1],place[1]+step_y,step_y) if step_y else [where[1]]*(abs(place[0]-where[0])+1)
+            for i,j in zip(repx,repy):
+                self.board[i][j]=which
 
     def get_sequence(self,which:int,at:list):
         opponent=3-which
@@ -51,11 +49,12 @@ class Othello:
         settable=[]
         for i in range(1,9):
             for j in range(1,9):
-                cross=[i for i in self.get_cross([i,j]) if i]
-                for k in cross:
-                    around=self.get_sequence(which,k)
-                    if around[0] and around[0][0]==opponent and around[0][-1]==which:
-                        settable.append([[i,j],around[1][-1]])
+                if self.list2board([i,j])==0:
+                    cross=[i for i in self.get_cross([i,j]) if i]
+                    for k in cross:
+                        around=self.get_sequence(which,k)
+                        if around[0] and around[0][0]==opponent and around[0][-1]==which:
+                            settable.append([[i,j],around[1][-1]])
         return settable
                     
 
@@ -103,8 +102,6 @@ class Othello:
                 list(reversed(horizontal[:h_index])),
                 list(reversed(cross_around_up_left[:up_left_index])),
                 ]
-    def list2str(self):
-        return "\n".join(["".join([str(i) for i in j]) for j in self.board[1:]][1:])
     
-othello=Othello()
-print(othello.list2str())
+    def list2str(self):
+        return "\n".join(["".join([str(j) for j in i[1:-1]]) for i in self.board[1:-1]])
